@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using PrintManager;
 
@@ -20,11 +13,15 @@ namespace PrintManagerTest
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            EmailExtractTest();
+        }
+        private void EmailExtractTest()
+        {
             EmailChecker.EmailSet("your email", "emailpassword", "imap.gmail.com", 993);
             EmailChecker checker = new EmailChecker();
             var result = checker.Check(new DateTime(2021, 8, 18));
             string display = "";
-            foreach(var r in result)
+            foreach (var r in result)
             {
                 display = $"{display}\r\n======================\r\n" +
                     $"OrderCode: {r.OrderCode}\r\n" +
@@ -40,7 +37,7 @@ namespace PrintManagerTest
                     $"OrderTotal: {r.OrderTotal}\r\n" +
                     $"OrderTotalCurrency: {r.OrderTotalCurrency}\r\n" +
                     $"OrderTotal: {r.OrderTotal}";
-                foreach(var i in r.Items)
+                foreach (var i in r.Items)
                 {
                     display = $"{display}\r\n----------------------\r\n" +
                         $"ItemName: {i.ItemName}\r\n" +
@@ -53,6 +50,29 @@ namespace PrintManagerTest
                 }
                 textBox1.Text = display;
             }
+        }
+        private async void PrintProviderTest()
+        {
+            IPrintProvider printProvider = new BurgerPrints("bd703d21-ca16-4170-8280-60c7ec0c8ee4", true);
+            var result  = await printProvider.MakeOrderAsync(new OrderRequestModel(
+                "testName"
+                , "testAdress"
+                , "testCity"
+                , "testStae"
+                , "testzip"
+                , "testCountry"
+                , "testEmail"
+                , new[] {
+                    new Item(
+                    "https://d1ud88wu9m1k4s.cloudfront.net/isp/2021/03/04/A2075_store_b7vinpbi8brtf.jpg"
+                    , "https://d1ud88wu9m1k4s.cloudfront.net/isp/2021/03/04/A2075_store_b7vinpbi8brtf.jpg"
+                    , 1)
+                    , new Item(
+                        "https://d1ud88wu9m1k4s.cloudfront.net/isp/2021/03/04/A2075_store_b7vinpbi8brtf.jpg"
+                        , "https://d1ud88wu9m1k4s.cloudfront.net/isp/2021/03/04/A2075_store_b7vinpbi8brtf.jpg"
+                        , 2
+                        )}));
+            textBox1.Text = result.ToString();
         }
     }
 }
