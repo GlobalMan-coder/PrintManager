@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace PrintManager
 {
-    public class BurgerPrints : IPrintProvider
+    public class BurgerPrints
     {
         private string ApiKey = "";
         private bool IsSandbox = false;
@@ -16,7 +15,7 @@ namespace PrintManager
             IsSandbox = isSandBox;
         }
 
-        public async Task<object> GetOrderDetail(string orderId)
+        public async Task<HttpResponseMessage> GetOrderDetail(string orderId)
         {
             using(var client = new HttpClient())
             {
@@ -26,7 +25,7 @@ namespace PrintManager
             }
         }
 
-        public async Task<object> MakeOrderAsync(OrderRequestModel request)
+        public async Task<HttpResponseMessage> MakeOrderAsync(BurgerPrintOrderRequest request)
         {
             using (var client = new HttpClient())
             {
@@ -35,7 +34,7 @@ namespace PrintManager
                 {
                     items.Add(new
                     {
-                        catalog_sku = "FRGSD-S",
+                        catalog_sku = item.CatalogSKU,
                         design_url_front = item.Templete,
                         mockup_url_front = item.Mockup,
                         quantity = item.Quantity
@@ -61,10 +60,52 @@ namespace PrintManager
                 return response;
             }
         }
-
-        public bool UploadImage()
+    }
+    public  class BurgerPrintOrderRequest 
+    {
+        public string CustomerName { get; }
+        public string Adress { get; }
+        public string City { get; }
+        public string State { get; }
+        public string Zip { get; }
+        public string Country { get; }
+        public string Email { get; }
+        public BurgerPrintOrderItem[] Items { get; }
+        public BurgerPrintOrderRequest(
+            string customerName
+            , string adress
+            , string city
+            , string state
+            , string zip
+            , string country
+            , string email
+            , BurgerPrintOrderItem[] items)
         {
-            throw new NotImplementedException();
+            Items = items;
+            CustomerName = customerName;
+            Adress = adress;
+            City = city;
+            State = state;
+            Zip = zip;
+            Country = country;
+            Email = email;
+        }
+    }
+    public class BurgerPrintOrderItem
+    {
+        public string CatalogSKU { get; }
+        public string Templete { get; }
+        public string Mockup { get; }
+        public int Quantity { get; }
+        public BurgerPrintOrderItem(
+            string catalogSKU
+            , string templete
+            , string mockup
+            , int quantity)
+        {
+            Templete = templete;
+            Mockup = mockup;
+            Quantity = quantity;
         }
     }
 }

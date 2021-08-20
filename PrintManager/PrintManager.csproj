@@ -60,8 +60,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Directory.cs" />
     <Compile Include="EmailChecker.cs" />
-    <Compile Include="IPrintProvider.cs" />
     <Compile Include="BurgerPrints.cs" />
     <Compile Include="Printify.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

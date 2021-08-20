@@ -1,26 +1,60 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
-
 namespace PrintManager
 {
-    public class Printify : IPrintProvider
+    public enum Method
     {
-        string token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzN2Q0YmQzMDM1ZmUxMWU5YTgwM2FiN2VlYjNjY2M5NyIsImp0aSI6IjFmYjMwM2MzZjQ1MWU1Zjg5YTU3MDBlOTMzMjM2YmZlZDIwMTExZmIwM2Q5ZTk0ODA5OGEzYzQ1YjhjOGQxZTMyZGE0MmM3YzhmZTYwOTlhIiwiaWF0IjoxNjI5NDE1Mjk4LCJuYmYiOjE2Mjk0MTUyOTgsImV4cCI6MTY2MDk1MTI5OCwic3ViIjoiODYyMzg2MyIsInNjb3BlcyI6WyJzaG9wcy5tYW5hZ2UiLCJzaG9wcy5yZWFkIiwiY2F0YWxvZy5yZWFkIiwib3JkZXJzLnJlYWQiLCJvcmRlcnMud3JpdGUiLCJwcm9kdWN0cy5yZWFkIiwicHJvZHVjdHMud3JpdGUiLCJ3ZWJob29rcy5yZWFkIiwid2ViaG9va3Mud3JpdGUiLCJ1cGxvYWRzLnJlYWQiLCJ1cGxvYWRzLndyaXRlIiwicHJpbnRfcHJvdmlkZXJzLnJlYWQiXX0.AfHEfxqxhaSmer1WOZZguA2khEYxxoo7-oT0Xzwjwwke4suKhiqLbkmd4LRax10LvRNQk_J9vWN_YykX7P4";
-        string tokenName = "test";
+        POST,
+        GET
+    }
+    public class Printify
+    {
+        string Token = "";
         string endpoint = "https://api.printify.com/v1/";
+        public Printify(string token)
+        {
+            Token = token;
+        }
         public Task<object> GetOrderDetail(string orderId)
         {
             throw new NotImplementedException();
         }
 
-        public bool UploadImage()
+        public async Task<HttpResponseMessage> UploadImage(string fileUrl)
         {
-            throw new NotImplementedException();
+            var file = File.ReadAllBytes(fileUrl);
+            string base64String = Convert.ToBase64String(file);
+            var temp = fileUrl.Split('/', '\\', '.');
+            string fileName = (temp.Length > 1) ? temp[temp.Length - 2] : "";
+            var postData = new Dictionary<string, string>
+            {
+                { "file_name",  fileName },
+                { "contents", base64String }
+            };
+            var content = new FormUrlEncodedContent(postData);
+            return await API("uploads/images.json", Method.POST, content);
         }
-
-        Task<object> IPrintProvider.MakeOrderAsync(OrderRequestModel request)
+        async Task<HttpResponseMessage> API(string apiUrl, Method method, HttpContent content = null)
         {
-            throw new NotImplementedException();
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                string url = endpoint + apiUrl;
+                HttpResponseMessage response;
+                if(method == Method.POST)
+                {
+                    response = await client.PostAsync(url, content);
+                }
+                else
+                {
+                    response = await client.GetAsync(url);
+                }
+                return response;
+            }
         }
     }
 }
