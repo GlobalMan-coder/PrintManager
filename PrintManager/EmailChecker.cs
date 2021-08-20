@@ -68,16 +68,45 @@ namespace PrintManager
             if (orderId == null) return null;
             result.OrderCode = orderId.InnerText;
 
-            var Address = doc.DocumentNode.Descendants("address").FirstOrDefault().Descendants("span").ToArray();
-            if (Address.Count() > 5)
+            var Address = doc.DocumentNode.Descendants("address").FirstOrDefault();
+
+            var lines = Regex.Split(Address.InnerHtml, @"\s*<br>\s*");
+            int isStreet2 = (lines.Count() > 5) ? 1 : 0;
+            result.CustomerName = lines[0].ToText();
+            result.Street = lines[1].ToText() + ((isStreet2 == 0) ? "" : " " + lines[2].ToText());
+            result.Country = lines[3 + isStreet2].ToText();
+            var citylines = Regex.Split(lines[2 + isStreet2].Trim(), @"\s*<span>\s*");
+            foreach(var info in citylines)
             {
-                result.CustomerName = Address[0].InnerText;
-                result.Street = Address[1].InnerText;
-                result.City = Address[2].InnerText;
-                result.State = Address[3].InnerText;
-                result.ZipCode = Address[4].InnerText;
-                result.Country = Address[5].InnerText;
+                var infoText = info.ToText();
+                if (infoText.Length != 0) {
+                    if (Regex.Match(info, "[0-9]").Success)
+                    {
+                        result.ZipCode = infoText;
+                    }
+                    else if(infoText.Length == 2)
+                    {
+                        result.State = infoText;
+                    }
+                    else
+                    {
+                        result.City = infoText;
+                    }
+                }
             }
+            
+
+
+                //.Descendants("span").ToArray();
+            //if (Address.Count() > 5)
+            //{
+            //    result.CustomerName = Address[0].InnerText;
+            //    result.Street = Address[1].InnerText;
+            //    result.City = Address[2].InnerText;
+            //    result.State = Address[3].InnerText;
+            //    result.ZipCode = Address[4].InnerText;
+            //    result.Country = Address[5].InnerText;
+            //}
 
             var customerEmail = Regex.Match(html, "people/[0-9a-zA-Z@.]+");
             if (customerEmail.Success) result.CustomerEmail = customerEmail.Value.Split('/')[1];
@@ -171,6 +200,10 @@ namespace PrintManager
             {
                 return "";
             }
+        }
+        public static string ToText(this string str, string pattern = ":")
+        {
+            return Regex.Replace(str, @"<\/?\w+>", "").Trim();
         }
     }
 }
