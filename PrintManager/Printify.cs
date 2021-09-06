@@ -14,10 +14,12 @@ namespace PrintManager
     public class Printify
     {
         string Token = "";
+        string ShopId = "";
         string endpoint = "https://api.printify.com/v1/";
-        public Printify(string token)
+        public Printify(string token, string shopId)
         {
             Token = token;
+            ShopId = shopId;
         }
         public Task<object> GetOrderDetail(string orderId)
         {
@@ -37,6 +39,13 @@ namespace PrintManager
             };
             var content = new FormUrlEncodedContent(postData);
             return await API("uploads/images.json", Method.POST, content);
+        }
+
+        public Task<HttpResponseMessage> CreateOrder()
+        {
+            throw new NotImplementedException();
+            //var content = new FormUrlEncodedContent();
+            //return await API($"shops/{ShopId}/orders.json", Method.POST, content);
         }
         async Task<HttpResponseMessage> API(string apiUrl, Method method, HttpContent content = null)
         {
