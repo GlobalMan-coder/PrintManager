@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common.cs" />
     <Compile Include="Directory.cs" />
     <Compile Include="EmailChecker.cs" />
     <Compile Include="BurgerPrints.cs" />

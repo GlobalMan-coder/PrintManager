@@ -16,28 +16,27 @@ namespace PrintManager
             ApiKey = apiKey;
             IsSandbox = isSandBox;
         }
-        public async Task<object> GetOrderDetail(string OrderId)
+        public async Task<BPOrderDetail> GetOrderDetail(string OrderId)
         {
             string url = $"https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v1/{OrderId}?api_key={ApiKey}&sandbox={IsSandbox.ToString()}";
             var response = await API(url, Method.GET);
             return JsonConvert.DeserializeObject<BPOrderDetail>(response);
         }
-        public async Task<object> GetLogOrderDetail(string LogId)
+        public async Task<BPLogOrderDetail> GetLogOrderDetail(string LogId)
         {
             string url = $"https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v2/check-log/{LogId}";
             var response = await API(url, Method.GET);
             return JsonConvert.DeserializeObject<BPLogOrderDetail>(response);
         }
-
         public async Task<BPOrderResponse> MakeOrderWithCustomDataAsync(BPOrderRequest orderItem)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(orderItem));
+            var content = new StringContent(JsonConvert.SerializeObject(orderItem), Encoding.UTF8, "application/json");
             var response = await API("https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v2", Method.POST, content);
             return JsonConvert.DeserializeObject<BPOrderResponse>(response);
         }
         public async Task<BPOrderResponse> MakeOrderAsync(BPOrderRequest orderItem)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(orderItem));
+            var content = new StringContent(JsonConvert.SerializeObject(orderItem), Encoding.UTF8, "application/json");
             var response = await API("https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v1", Method.POST, content);
             return JsonConvert.DeserializeObject<BPOrderResponse>(response);
         }
@@ -45,19 +44,17 @@ namespace PrintManager
         {
             using (var client = new HttpClient())
             {
-                string result = "";
+                HttpResponseMessage response;
                 if (method == Method.POST)
                 {
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    var response = await client.PostAsync(apiUrl, content);
-                    result = await response.Content.ReadAsStringAsync();
+                    response = await client.PostAsync(apiUrl, content);
                 }
                 else
                 {
-                    var response = await client.GetAsync(apiUrl, HttpCompletionOption.ResponseContentRead);
-                    result = await response.Content.ReadAsStringAsync();
+                    response = await client.GetAsync(apiUrl, HttpCompletionOption.ResponseContentRead);
                 }
-                return result;
+                return await response.Content.ReadAsStringAsync(); ;
             }
         }
     }

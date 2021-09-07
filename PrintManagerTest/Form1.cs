@@ -3,6 +3,8 @@ using System.Windows.Forms;
 using PrintManager;
 using Newtonsoft.Json;
 using static System.Environment;
+using System.Threading.Tasks;
+
 namespace PrintManagerTest
 {
     public partial class Form1 : Form
@@ -12,51 +14,23 @@ namespace PrintManagerTest
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void Form1_Load(object sender, EventArgs e)
         {
             //EmailExtractTest();
-            BurgerPrintTest();
+            await BurgerPrintTest();
+            await PrintfyTest();
         }
         private void EmailExtractTest()
         {
-            textBox1.Text += $"{NewLine}============  EmailExtractTest  =============={NewLine}";
+            textBox1.AppendText($"{NewLine}{NewLine}{NewLine}============  EmailExtractTest  =============={NewLine}");
             EmailChecker.EmailSet("yourmail", "yourpassword", "imap-mail.outlook.com", 993);
             EmailChecker checker = new EmailChecker();
             var result = checker.Check(new DateTime(2021, 8, 18));
-            string display = "";
-            foreach (var r in result)
-            {
-                display = $"{display}\r\n======================\r\n" +
-                    $"OrderCode: {r.OrderCode}\r\n" +
-                    $"OrderTime: {r.OrderTime.ToString()}\r\n" +
-                    $"Store: {r.Store}\r\n" +
-                    $"CustomerName: {r.CustomerName}\r\n" +
-                    $"CustomerEmail: {r.CustomerEmail}\r\n" +
-                    $"Street: {r.Street}\r\n" +
-                    $"City: {r.City}\r\n" +
-                    $"State: {r.State}\r\n" +
-                    $"ZipCode: {r.ZipCode}\r\n" +
-                    $"Country: {r.Country}\r\n" +
-                    $"OrderTotal: {r.OrderTotal}\r\n" +
-                    $"OrderTotalCurrency: {r.OrderTotalCurrency}\r\n" +
-                    $"OrderTotal: {r.OrderTotal}";
-                foreach (var i in r.Items)
-                {
-                    display = $"{display}\r\n----------------------\r\n" +
-                        $"ItemName: {i.ItemName}\r\n" +
-                        $"Size and stype: {i.SizeSType}\r\n" +
-                        $"Color: {i.Color}\r\n" +
-                        $"Quantity: {i.Quantity}\r\n" +
-                        $"Price: {i.Price}\r\n" +
-                        $"PriceCurrency: {i.PriceCurrency}\r\n" +
-                        $"";
-                }
-                textBox1.Text += display;
-            }
+            textBox1.AppendText(JsonConvert.SerializeObject(result));
         }
-        private async void BurgerPrintTest()
+        private async Task<bool> BurgerPrintTest()
         {
-            textBox1.Text += $"{NewLine}============  BurgerPrintTest  =============={NewLine}";
+            textBox1.AppendText($"{NewLine}{NewLine}{NewLine}============  BurgerPrintTest  =============={NewLine}");
             BurgerPrints printProvider = new BurgerPrints("bd703d21-ca16-4170-8280-60c7ec0c8ee4");
             var resBPOrder = await printProvider.MakeOrderAsync(
                 new BPOrderRequest(
@@ -82,17 +56,17 @@ namespace PrintManagerTest
                     , shipping_phone = "phone"
                     //, reference_order_id = "V3"
                 });
-            textBox1.Text += $"{NewLine}------- MakeOrderTest --------{NewLine}";
+            textBox1.AppendText($"{NewLine}{NewLine}------- MakeOrderTest --------{NewLine}");
             if (resBPOrder.is_success)
             {
-                textBox1.Text += $"Message: {resBPOrder.message}{NewLine}OrderId: {resBPOrder.order_id}";
+                textBox1.AppendText($"Message: {resBPOrder.message}{NewLine}OrderId: {resBPOrder.order_id}");
                 var resGetOrder = await printProvider.GetOrderDetail(resBPOrder.order_id);
-                textBox1.Text += $"{NewLine}------- GetOrderTest --------{NewLine}";
-                textBox1.Text += JsonConvert.SerializeObject(resGetOrder);
+                textBox1.AppendText($"{NewLine}{NewLine}------- GetOrderTest --------{NewLine}");
+                textBox1.AppendText(JsonConvert.SerializeObject(resGetOrder));
             }
             else
             {
-                textBox1.Text += $"Failed.{NewLine}Message: {resBPOrder.message}";
+                textBox1.AppendText($"Failed.{NewLine}Message: {resBPOrder.message}");
             }
             
             var resBPOrderWithCustomData = await printProvider.MakeOrderWithCustomDataAsync(new BPOrderRequest(
@@ -126,25 +100,107 @@ namespace PrintManagerTest
                     , shipping_phone = "phone"
                     //, reference_order_id = "V3"
                 });
-            textBox1.Text += $"{NewLine}------- MakeOrderTestWithCustomData --------{NewLine}";
+            textBox1.AppendText($"{NewLine}{NewLine}------- MakeOrderTestWithCustomData --------{NewLine}");
             if (resBPOrderWithCustomData.is_success)
             {
                 string resId = resBPOrderWithCustomData.log_id ?? resBPOrderWithCustomData.order_id;
-                textBox1.Text += $"Message: {resBPOrderWithCustomData.message}{NewLine}LogId: {resId}";
+                textBox1.AppendText($"Message: {resBPOrderWithCustomData.message}{NewLine}LogId: {resId}");
                 var resGetLogOrder = await printProvider.GetLogOrderDetail(resId);
-                textBox1.Text += $"{NewLine}------- GetLogOrderTest --------{NewLine}";
-                textBox1.Text += JsonConvert.SerializeObject(resGetLogOrder);
+                textBox1.AppendText($"{NewLine}{NewLine}------- GetLogOrderTest --------{NewLine}");
+                textBox1.AppendText(JsonConvert.SerializeObject(resGetLogOrder));
             }
             else
             {
-                textBox1.Text += $"Failed.{NewLine}Message: {resBPOrderWithCustomData.message}";
+                textBox1.AppendText($"Failed.{NewLine}Message: {resBPOrderWithCustomData.message}");
             }
+            return true;
         }
-        private async void PrintfyTest()
+        private async Task<bool> PrintfyTest()
         {
-            Printify printProvider = new Printify("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzN2Q0YmQzMDM1ZmUxMWU5YTgwM2FiN2VlYjNjY2M5NyIsImp0aSI6IjFmYjMwM2MzZjQ1MWU1Zjg5YTU3MDBlOTMzMjM2YmZlZDIwMTExZmIwM2Q5ZTk0ODA5OGEzYzQ1YjhjOGQxZTMyZGE0MmM3YzhmZTYwOTlhIiwiaWF0IjoxNjI5NDE1Mjk4LCJuYmYiOjE2Mjk0MTUyOTgsImV4cCI6MTY2MDk1MTI5OCwic3ViIjoiODYyMzg2MyIsInNjb3BlcyI6WyJzaG9wcy5tYW5hZ2UiLCJzaG9wcy5yZWFkIiwiY2F0YWxvZy5yZWFkIiwib3JkZXJzLnJlYWQiLCJvcmRlcnMud3JpdGUiLCJwcm9kdWN0cy5yZWFkIiwicHJvZHVjdHMud3JpdGUiLCJ3ZWJob29rcy5yZWFkIiwid2ViaG9va3Mud3JpdGUiLCJ1cGxvYWRzLnJlYWQiLCJ1cGxvYWRzLndyaXRlIiwicHJpbnRfcHJvdmlkZXJzLnJlYWQiXX0.AfHEfxqxhaSmer1WOZZguA2khEYxxoo7-oT0Xzwjwwke4suKhiqLbkmd4LRax10LvRNQk_J9vWN_YykX7P4", "test");
-            var response = await printProvider.UploadImage(@"D:\test.jpg");
-            textBox1.Text = response.ToString();
+            textBox1.AppendText($"{NewLine}{NewLine}{NewLine}============  PrintfyTest  =============={NewLine}");
+            Printify printProvider = new Printify("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzN2Q0YmQzMDM1ZmUxMWU5YTgwM2FiN2VlYjNjY2M5NyIsImp0aSI6ImEyYmYwNDlkZmY0ZDhkNTc2OWRhNzcwZDJmMDkwY2YyYzQ0MDIyZTk0N2ZjNzk4NmQzNGNlYjE1MDgxN2M1OTQ1ZGE4OTcyMmEwM2IzMTczIiwiaWF0IjoxNjMwOTY3MDg5LCJuYmYiOjE2MzA5NjcwODksImV4cCI6MTY2MjUwMzA4OSwic3ViIjoiODYyMzg2MyIsInNjb3BlcyI6WyJzaG9wcy5tYW5hZ2UiLCJzaG9wcy5yZWFkIiwiY2F0YWxvZy5yZWFkIiwib3JkZXJzLnJlYWQiLCJvcmRlcnMud3JpdGUiLCJwcm9kdWN0cy5yZWFkIiwicHJvZHVjdHMud3JpdGUiLCJ3ZWJob29rcy5yZWFkIiwid2ViaG9va3Mud3JpdGUiLCJ1cGxvYWRzLnJlYWQiLCJ1cGxvYWRzLndyaXRlIiwicHJpbnRfcHJvdmlkZXJzLnJlYWQiXX0.ALrhsgi_Pf63aviX9FaX1OqY7CFDVH08_ycWC5GyULXwiMbaRQAe4oirTBtb_UDdfbFRqIuxwDdc9dyVvj0");
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- ImageUploadTest --------{NewLine}");
+            var resUpload = await printProvider.UploadImage("D:\\test.jpg");
+            textBox1.AppendText(JsonConvert.SerializeObject(resUpload));
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- GetShopListTest --------{NewLine}");
+            var resShopList = await printProvider.GetShopList();
+            textBox1.AppendText(JsonConvert.SerializeObject(resShopList));
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- GetAllBlueprintsTest --------{NewLine}");
+            var resBlueprintList = await printProvider.GetAllBlueprint();
+            textBox1.AppendText($"{resBlueprintList.Count} blueprints exist.");
+            int firstBluePrintId = resBlueprintList[0].id;
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- GetBlueprintTest --------{NewLine}");
+            var resBlueprint = await printProvider.GetAllBlueprint();
+            textBox1.AppendText(JsonConvert.SerializeObject(resBlueprint));
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- GetPrintProvidersTest --------{NewLine}");
+            var resPrintProviderList = await printProvider.GetPrintProviders(firstBluePrintId);
+            textBox1.AppendText(JsonConvert.SerializeObject(resPrintProviderList));
+            int firstPrintProviderid = resPrintProviderList[0].id;
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- GetVariantsTest --------{NewLine}");
+            var resVariants = await printProvider.GetVariants(firstBluePrintId, firstPrintProviderid);
+            textBox1.AppendText($"{resVariants.variants.Count} variants exist");
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- CreateProductTest --------{NewLine}");
+            var resCreateProduct = await printProvider.CreateProduct(
+                resShopList[0].id
+                , new CreateProductRequest(
+                    "TestProductTitle"
+                    , "TestDescription"
+                    , firstBluePrintId
+                    , firstPrintProviderid
+                    , new [] {
+                        new RequestVariant(resVariants.variants[0].id, 400, true)
+                        , new RequestVariant(resVariants.variants[1].id, 400, true)
+                        , new RequestVariant(resVariants.variants[2].id, 400, true)
+                    }
+                    , new [] {
+                        new RequestPrintArea(
+                        new [] { resVariants.variants[0].id
+                            , resVariants.variants[1].id
+                            , resVariants.variants[2].id
+                        }
+                        , new [] {
+                            new RequestPlaceholder( 
+                                "front"
+                                , new []
+                                {
+                                    new RequestImage(resUpload.id, 0.5f,0.5f, 0.2f, 0)
+                                })})}));
+
+            textBox1.AppendText(JsonConvert.SerializeObject(resCreateProduct));
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- CreateOrderTest --------{NewLine}");
+            var resCreateOrder = await printProvider.CreateOrder(
+                resShopList[0].id
+                , new CreateOrderRequest(
+                    DateTime.Now.Millisecond.ToString()
+                    , "Label"
+                    , 1
+                    , new []
+                    {
+                        new OrderLineItem(resCreateProduct.id, resCreateProduct.variants[0].id, 1)
+                    }
+                    , new Address("FirstName", "LastName", "Email", "Phone", "US", "Region", "Ad1", "Ad2", "Zip")
+                ));
+            textBox1.AppendText(JsonConvert.SerializeObject(resCreateOrder));
+
+            if(resCreateOrder.id != null)
+            {
+                textBox1.AppendText($"{NewLine}{NewLine}------- GetOrderDetailTest --------{NewLine}");
+                var resGetOrder = await printProvider.GetOrder(resShopList[0].id, resCreateOrder.id);
+                textBox1.AppendText(JsonConvert.SerializeObject(resGetOrder));
+            }
+
+            textBox1.AppendText($"{NewLine}{NewLine}------- GetAllOrderTest --------{NewLine}");
+            var resGetOrderList = await printProvider.GetOrders(resShopList[0].id);
+            textBox1.AppendText(JsonConvert.SerializeObject(resGetOrderList));
+            return true;
         }
     }
 }
