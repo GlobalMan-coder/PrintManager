@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using MailKit.Net.Imap;
-using MailKit;
 using HtmlAgilityPack;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-
+using Chilkat;
 namespace PrintManager
 {
     internal class Settings
@@ -28,32 +26,32 @@ namespace PrintManager
         public List<EmailModel> Check(DateTime? startTime = null)
         {
             List <EmailModel> result = new List<EmailModel>();
-            try
+            using (Imap client = new Imap())
             {
-                using (ImapClient client = new ImapClient())
+                client.Port = Settings.Port;
+                client.Ssl = true;
+                if (!client.Connect(Settings.Host)) throw new Exception(client.LastErrorText);
+                if (!client.Login(Settings.UserName, Settings.Password)) throw new Exception(client.LastErrorText);
+                client.SelectMailbox("Inbox");
+                MessageSet ms = client.Search("All", true);
+                if(startTime != null)
                 {
-                    client.Connect(Settings.Host, Settings.Port);
-                    client.Authenticate(Settings.UserName, Settings.Password);
-                    var inbox = client.Inbox;
-                    inbox.Open(FolderAccess.ReadOnly);
-                    if (inbox.Count == 0) return result;
-                    for (int i = inbox.Count - 1; i >= 0; i--)
-                    {
-                        var message = inbox.GetMessage(i);
-                        if (startTime != null && message.Date.DateTime < startTime) break;
-                        var email = Extract(message.HtmlBody);
-                        if(email != null)
-                        {
-                            email.OrderTime = message.Date.ToString();
-                            result.Add(email);
-                        }
-                    }
-                    return result;
+                    ms = client.Search("SENTSINCE " + startTime.Value.ToString("dd-MMM-yyyy"), true);
                 }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                EmailBundle eb = client.FetchBundle(ms);
+                int count = eb.MessageCount;
+                if (count == 0) return result;
+                for (int i = 0; i < count; i++)
+                {
+                    Email email = eb.GetEmail(i);
+                    var model = Extract(email.GetHtmlBody());
+                    if (model != null)
+                    {
+                        model.OrderTime = DateTime.Parse(email.EmailDateStr);
+                        result.Add(model);
+                    }
+                }
+                return result;
             }
         }
 
@@ -94,10 +92,8 @@ namespace PrintManager
                     }
                 }
             }
-            
 
-
-                //.Descendants("span").ToArray();
+            //.Descendants("span").ToArray();
             //if (Address.Count() > 5)
             //{
             //    result.CustomerName = Address[0].InnerText;
@@ -132,13 +128,13 @@ namespace PrintManager
                     }
                     else if (innerText.Contains("Quantity"))
                     {
-                        item.Quantity = innerText.ToValue();
+                        item.Quantity = int.Parse(innerText.ToValue());
                     }
                     else if (innerText.Contains("Price"))
                     {
                         var prices = Regex.Matches(innerText.ToValue(), @"([0-9.]+|[^0-9.\s]+)");
                         item.PriceCurrency = prices[0].Value;
-                        item.Price = prices[1].Value;
+                        item.Price = float.Parse(prices[1].Value);
                     }
                     else if (innerText.Contains("Shop") && result.Store == null)
                     {
@@ -153,7 +149,7 @@ namespace PrintManager
                 .Contains("text-align:left") && node.InnerText.Contains("Order total:")).FirstOrDefault()
                 .ParentNode.ChildNodes[3].ChildNodes[1];
             var price = Regex.Matches(orderTotal.InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
-            result.OrderTotal = price[1].Value;
+            result.OrderTotal = float.Parse(price[1].Value);
             result.OrderTotalCurrency = price[0].Value;
             return result;
         }
@@ -161,7 +157,7 @@ namespace PrintManager
     public class EmailModel
     {
         public string OrderCode { get; internal set; }
-        public string OrderTime { get; internal set; }
+        public DateTime OrderTime { get; internal set; }
         public string Account { get; internal set; }
         public string Store { get; internal set; }
         public string CustomerName { get; internal set; }
@@ -171,7 +167,7 @@ namespace PrintManager
         public string State { get; internal set; }
         public string ZipCode { get; internal set; }
         public string Country { get; internal set; }
-        public string OrderTotal { get; internal set; }
+        public float OrderTotal { get; internal set; }
         public string OrderTotalCurrency { get; internal set; }
         public List<ItemModel> Items { get; internal set; }
         public EmailModel()
@@ -184,8 +180,8 @@ namespace PrintManager
         public string ItemName { get; internal set; }
         public string SizeSType { get; internal set; }
         public string Color { get; internal set; }
-        public string Quantity { get; internal set; }
-        public string Price { get; internal set; }
+        public int Quantity { get; internal set; }
+        public float Price { get; internal set; }
         public string PriceCurrency { get; internal set; }
     }
     internal static class Extension

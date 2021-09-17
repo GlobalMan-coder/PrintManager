@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
 namespace PrintManager
 {
     public class Printify
@@ -27,58 +27,58 @@ namespace PrintManager
                 { "file_name",  fileName },
                 { "contents", base64String }
             };
-            var content = new StringContent(JsonConvert.SerializeObject(postData));
+            var content = new StringContent(JsonSerializer.Serialize(postData));
             var response = await API("uploads/images.json", Method.POST, content);
-            return JsonConvert.DeserializeObject<UploadImageResponse>(response);
+            return JsonSerializer.Deserialize<UploadImageResponse>(response);
         }
-        public async Task<List<Shop>> GetShopList()
+        public async Task<IList<Shop>> GetShopList()
         {
             var response = await API("shops.json", Method.GET);
-            return JsonConvert.DeserializeObject<List<Shop>>(response);
+            return JsonSerializer.Deserialize<IList<Shop>>(response);
         }
         public async Task<List<Blueprint>> GetAllBlueprint()
         {
             var response = await API("catalog/blueprints.json", Method.GET);
-            return JsonConvert.DeserializeObject<List<Blueprint>>(response);
+            return JsonSerializer.Deserialize<List<Blueprint>>(response);
         }
         public async Task<Blueprint> GetBlueprint(int blueprintId)
         {
             var response = await API($"catalog/blueprints/{blueprintId}.json", Method.GET);
-            return JsonConvert.DeserializeObject<Blueprint>(response);
+            return JsonSerializer.Deserialize<Blueprint>(response);
         }
         public async Task<List<PrintProvider>> GetPrintProviders(int blueprintId)
         {
             var response = await API($"catalog/blueprints/{blueprintId}/print_providers.json", Method.GET);
-            return JsonConvert.DeserializeObject<List<PrintProvider>>(response);
+            return JsonSerializer.Deserialize<List<PrintProvider>>(response);
         }
         public async Task<Variants> GetVariants(int blueprintId, int printProviderId)
         {
             var response = await API($"catalog/blueprints/{blueprintId}/print_providers/{printProviderId}/variants.json", Method.GET);
-            return JsonConvert.DeserializeObject<Variants>(response);
+            return JsonSerializer.Deserialize<Variants>(response);
         }
-        public async Task<ResponseProduct> CreateProduct(string ShopId, CreateProductRequest request)
+        public async Task<ResponseProduct> CreateProduct(long ShopId, CreateProductRequest request)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
             var response = await API($"shops/{ShopId}/products.json", Method.POST, content);
-            return JsonConvert.DeserializeObject<ResponseProduct>(response);
+            return JsonSerializer.Deserialize<ResponseProduct>(response);
         }
-        public async Task<ResponseOrder> CreateOrder(string ShopId, CreateOrderRequest request)
+        public async Task<ResponseOrder> CreateOrder(long ShopId, CreateOrderRequest request)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
             var response = await API($"shops/{ShopId}/orders.json", Method.POST, content);
-            return JsonConvert.DeserializeObject<ResponseOrder>(response);
+            return JsonSerializer.Deserialize<ResponseOrder>(response);
         }
 
-        public async Task<object> GetOrders(string ShopId)
+        public async Task<object> GetOrders(long ShopId)
         {
             var response = await API($"shops/{ShopId}/orders.json", Method.GET);
-            return JsonConvert.DeserializeObject(response);
+            return JsonSerializer.Deserialize<object>(response);
         }
 
-        public async Task<object> GetOrder(string ShopId, string OrderId)
+        public async Task<object> GetOrder(long ShopId, string OrderId)
         {
             var response = await API($"shops/{ShopId}/orders/{OrderId}.json", Method.GET);
-            return JsonConvert.DeserializeObject(response);
+            return JsonSerializer.Deserialize<object>(response);
         }
 
         async Task<string> API(string apiUrl, Method method, HttpContent content = null)
@@ -115,7 +115,7 @@ namespace PrintManager
     }
     public class Shop
     {
-        public string id { get; set; }
+        public long id { get; set; }
         public string title { get; set; }
         public string sales_channel { get; set; }
     }
@@ -251,7 +251,7 @@ namespace PrintManager
             public bool is_enabled { get; set; }
             public bool is_default { get; set; }
             public bool is_available { get; set; }
-            public string[] options { get; set; }
+            public int[] options { get; set; }
             public int quantity { get; set; }
         }
         public class ProductImage

@@ -3,7 +3,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json;
+
 
 namespace PrintManager
 {
@@ -20,25 +21,25 @@ namespace PrintManager
         {
             string url = $"https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v1/{OrderId}?api_key={ApiKey}&sandbox={IsSandbox.ToString()}";
             var response = await API(url, Method.GET);
-            return JsonConvert.DeserializeObject<BPOrderDetail>(response);
+            return JsonSerializer.Deserialize<BPOrderDetail>(response);
         }
         public async Task<BPLogOrderDetail> GetLogOrderDetail(string LogId)
         {
             string url = $"https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v2/check-log/{LogId}";
             var response = await API(url, Method.GET);
-            return JsonConvert.DeserializeObject<BPLogOrderDetail>(response);
+            return JsonSerializer.Deserialize<BPLogOrderDetail>(response);
         }
         public async Task<BPOrderResponse> MakeOrderWithCustomDataAsync(BPOrderRequest orderItem)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(orderItem), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(orderItem), Encoding.UTF8, "application/json");
             var response = await API("https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v2", Method.POST, content);
-            return JsonConvert.DeserializeObject<BPOrderResponse>(response);
+            return JsonSerializer.Deserialize<BPOrderResponse>(response);
         }
         public async Task<BPOrderResponse> MakeOrderAsync(BPOrderRequest orderItem)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(orderItem), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(orderItem), Encoding.UTF8, "application/json");
             var response = await API("https://seller.burgerprints.com/pspfulfill/api/v1/dropship-api/order/v1", Method.POST, content);
-            return JsonConvert.DeserializeObject<BPOrderResponse>(response);
+            return JsonSerializer.Deserialize<BPOrderResponse>(response);
         }
         async Task<string> API(string apiUrl, Method method, HttpContent content = null)
         {
@@ -54,7 +55,7 @@ namespace PrintManager
                 {
                     response = await client.GetAsync(apiUrl, HttpCompletionOption.ResponseContentRead);
                 }
-                return await response.Content.ReadAsStringAsync(); ;
+                return await response.Content.ReadAsStringAsync();
             }
         }
     }
