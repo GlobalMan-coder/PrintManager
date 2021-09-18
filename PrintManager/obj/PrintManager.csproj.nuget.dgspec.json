@@ -1,24 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj": {}
+    "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManager\\PrintManager.csproj": {}
   },
   "projects": {
-    "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj": {
+    "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManager\\PrintManager.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj",
+        "projectUniqueName": "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManager\\PrintManager.csproj",
         "projectName": "PrintManager",
-        "projectPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj",
-        "packagesPath": "C:\\Users\\GM\\.nuget\\packages\\",
-        "outputPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\obj\\",
+        "projectPath": "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManager\\PrintManager.csproj",
+        "packagesPath": "d:\\NuGetCache",
+        "outputPath": "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManager\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
+          "C:\\Program Files (x86)\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\GM\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\huypq\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp2.1"
@@ -29,6 +31,7 @@
         },
         "frameworks": {
           "netcoreapp2.1": {
+            "targetAlias": "netcoreapp2.1",
             "projectReferences": {}
           }
         },
@@ -40,6 +43,7 @@
       },
       "frameworks": {
         "netcoreapp2.1": {
+          "targetAlias": "netcoreapp2.1",
           "dependencies": {
             "ChilkatDnCore": {
               "target": "Package",
@@ -65,10 +69,16 @@
             }
           },
           "imports": [
-            "net461"
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
           ],
           "assetTargetFallback": true,
-          "warn": true
+          "warn": true,
+          "runtimeIdentifierGraphPath": "C:\\Program Files (x86)\\dotnet\\sdk\\5.0.303\\RuntimeIdentifierGraph.json"
         }
       }
     }

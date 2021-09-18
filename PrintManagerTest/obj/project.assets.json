@@ -3141,24 +3141,27 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\GM\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "d:\\NuGetCache": {},
+    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {},
+    "C:\\Program Files (x86)\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
+      "projectUniqueName": "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
       "projectName": "PrintManagerTest",
-      "projectPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
-      "packagesPath": "C:\\Users\\GM\\.nuget\\packages\\",
-      "outputPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\obj\\",
+      "projectPath": "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
+      "packagesPath": "d:\\NuGetCache",
+      "outputPath": "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManagerTest\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
+        "C:\\Program Files (x86)\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\GM\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\huypq\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.1"
@@ -3169,9 +3172,10 @@
       },
       "frameworks": {
         "netcoreapp2.1": {
+          "targetAlias": "netcoreapp2.1",
           "projectReferences": {
-            "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj": {
-              "projectPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj"
+            "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManager\\PrintManager.csproj": {
+              "projectPath": "C:\\Users\\huypq\\Source\\Repos\\PrintManager\\PrintManager\\PrintManager.csproj"
             }
           }
         }
@@ -3184,18 +3188,26 @@
     },
     "frameworks": {
       "netcoreapp2.1": {
+        "targetAlias": "netcoreapp2.1",
         "dependencies": {
           "Microsoft.NETCore.App": {
+            "suppressParent": "All",
             "target": "Package",
             "version": "[2.1.0, )",
             "autoReferenced": true
           }
         },
         "imports": [
-          "net461"
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
         ],
         "assetTargetFallback": true,
-        "warn": true
+        "warn": true,
+        "runtimeIdentifierGraphPath": "C:\\Program Files (x86)\\dotnet\\sdk\\5.0.303\\RuntimeIdentifierGraph.json"
       }
     }
   }

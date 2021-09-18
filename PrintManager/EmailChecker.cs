@@ -9,20 +9,29 @@ using MailKit.Search;
 
 namespace PrintManager
 {
-    internal class Settings
+    public class EmailSettings
     {
-        public static string Host = "pop.gmail.com";
-        public static int Port = 143;
-        public static string UserName;
-        public static string Password;
+        public string Host = "pop.gmail.com";
+        public int Port = 143;
+        public string UserName;
+        public string Password;
+        public bool SSL = false;
     }
     public class EmailChecker
     {
-        public static void EmailSet(string UserName, string Password, string Host = null, int? Port = null)
+
+        public EmailSettings Settings
         {
+            get;
+            private set;
+        }
+        public EmailChecker(string UserName, string Password, string Host = null, int? Port = null, bool SSL= true)
+        {
+            Settings = new EmailSettings();
             Settings.UserName = UserName;
             Settings.Password = Password;
-            if(Host != null) Settings.Host = Host;
+            Settings.SSL = SSL;
+            if (Host != null) Settings.Host = Host;
             if (Port != null) Settings.Port = Port.Value;
         }
 
@@ -31,7 +40,7 @@ namespace PrintManager
             List <EmailModel> result = new List<EmailModel>();
             using (ImapClient client = new ImapClient())
             {
-                client.Connect(Settings.Host, Settings.Port, true);
+                client.Connect(Settings.Host, Settings.Port, Settings.SSL);
                 client.Authenticate(Settings.UserName, Settings.Password);
                 var inbox = client.Inbox;
                 inbox.Open(MailKit.FolderAccess.ReadOnly);
