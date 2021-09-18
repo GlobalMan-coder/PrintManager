@@ -16,8 +16,8 @@ namespace PrintManagerTest
         private static async Task Test()
         {
             EmailExtractTest();
-            await BurgerPrintTest();
-            await PrintfyTest();
+            //await BurgerPrintTest();
+            //await PrintfyTest();
         }
 
         private static void EmailExtractTest()

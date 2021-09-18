@@ -3,7 +3,10 @@ using HtmlAgilityPack;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Chilkat;
+//using Chilkat;
+using MailKit.Net.Imap;
+using MailKit.Search;
+
 namespace PrintManager
 {
     internal class Settings
@@ -26,28 +29,25 @@ namespace PrintManager
         public List<EmailModel> Check(DateTime? startTime = null)
         {
             List <EmailModel> result = new List<EmailModel>();
-            using (Imap client = new Imap())
+            using (ImapClient client = new ImapClient())
             {
-                client.Port = Settings.Port;
-                client.Ssl = true;
-                if (!client.Connect(Settings.Host)) throw new Exception(client.LastErrorText);
-                if (!client.Login(Settings.UserName, Settings.Password)) throw new Exception(client.LastErrorText);
-                client.SelectMailbox("Inbox");
-                MessageSet ms = client.Search("All", true);
+                client.Connect(Settings.Host, Settings.Port, true);
+                client.Authenticate(Settings.UserName, Settings.Password);
+                var inbox = client.Inbox;
+                inbox.Open(MailKit.FolderAccess.ReadOnly);
+                var ids = inbox.Search(SearchQuery.All);
                 if(startTime != null)
                 {
-                    ms = client.Search("SENTSINCE " + startTime.Value.ToString("dd-MMM-yyyy"), true);
+                    ids = inbox.Search(SearchQuery.DeliveredAfter(startTime.Value));
                 }
-                EmailBundle eb = client.FetchBundle(ms);
-                int count = eb.MessageCount;
-                if (count == 0) return result;
-                for (int i = 0; i < count; i++)
+                if (ids.Count == 0) return result;
+                foreach(var id in ids)
                 {
-                    Email email = eb.GetEmail(i);
-                    var model = Extract(email.GetHtmlBody());
-                    if (model != null)
+                    var mail = inbox.GetMessage(id);
+                    var model = Extract(mail.HtmlBody);
+                    if(model != null)
                     {
-                        model.OrderTime = DateTime.Parse(email.EmailDateStr);
+                        model.OrderTime = mail.Date.Date;
                         result.Add(model);
                     }
                 }
@@ -61,9 +61,17 @@ namespace PrintManager
             EmailModel result = new EmailModel();
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
-            var orderId = doc.DocumentNode.Descendants("a").
-                Where(node => node.GetAttributeValue("href", "").Contains("orders/")).FirstOrDefault();
+            var atags = doc.DocumentNode.Descendants("a");
+            var orderId = atags.Where(node => node.GetAttributeValue("href", "").Contains("orders/")).FirstOrDefault();
             if (orderId == null) return null;
+            var mails = atags.Where(node => node.GetAttributeValue("href", "").Contains("mailto")).ToList();
+            int mailCount = mails.Count;
+            if(mailCount > 1)
+            {
+                result.CustomerEmail = mails[mailCount - 1].GetAttributeValue("href", "").Substring(7);
+                result.Account = mails[mailCount - 2].GetAttributeValue("href", "").Substring(7);
+            }
+            
             result.OrderCode = orderId.InnerText;
 
             var Address = doc.DocumentNode.Descendants("address").FirstOrDefault();
@@ -104,8 +112,8 @@ namespace PrintManager
             //    result.Country = Address[5].InnerText;
             //}
 
-            var customerEmail = Regex.Match(html, "people/[0-9a-zA-Z@.]+");
-            if (customerEmail.Success) result.CustomerEmail = customerEmail.Value.Split('/')[1];
+            //var customerEmail = Regex.Match(html, "people/[0-9a-zA-Z@.]+");
+            //if (customerEmail.Success) result.CustomerEmail = customerEmail.Value.Split('/')[1];
 
             var ItemNameNodes = doc.DocumentNode.Descendants("a").
                 Where(node => node.GetAttributeValue("href", "").Contains("transaction/")
@@ -144,13 +152,52 @@ namespace PrintManager
                 result.Items.Add(item);
             }
 
-            var orderTotal = doc.DocumentNode.Descendants("td")
+            var orderSumary = doc.DocumentNode.Descendants("td")
                 .Where(node => node.GetAttributeValue("style", "")
-                .Contains("text-align:left") && node.InnerText.Contains("Order total:")).FirstOrDefault()
-                .ParentNode.ChildNodes[3].ChildNodes[1];
-            var price = Regex.Matches(orderTotal.InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
-            result.OrderTotal = float.Parse(price[1].Value);
-            result.OrderTotalCurrency = price[0].Value;
+                .Contains("text-align:left"));
+            var orderTotalNode = orderSumary.Where(node => node.InnerText.Contains("Order total:")).FirstOrDefault();
+            if (orderTotalNode != null)
+            {
+                var orderPrice = Regex.Matches(orderTotalNode.ParentNode.ChildNodes[3].ChildNodes[1].InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
+                result.OrderTotal = float.Parse(orderPrice[1].Value);
+                result.OrderTotalCurrency = orderPrice[0].Value;
+            }
+
+            var itemTotalNode = orderSumary.Where(node => node.InnerText.Contains("Item total:")).FirstOrDefault();
+            if (itemTotalNode != null)
+            {
+                var itemPrice = Regex.Matches(itemTotalNode.ParentNode.ChildNodes[3].ChildNodes[1].InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
+                result.ItemTotal = float.Parse(itemPrice[1].Value);
+            }
+
+            var subTotalNode = orderSumary.Where(node => node.InnerText.Contains("Subtotal:")).FirstOrDefault();
+            if (subTotalNode != null)
+            {
+                var subTotal = Regex.Matches(subTotalNode.ParentNode.ChildNodes[3].ChildNodes[1].InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
+                result.Subtotal = float.Parse(subTotal[1].Value);
+            }
+
+            var discountNode = orderSumary.Where(node => node.InnerText.Contains("Discount:")).FirstOrDefault();
+            if (discountNode != null)
+            {
+                var discount = Regex.Matches(discountNode.ParentNode.ChildNodes[3].ChildNodes[1].InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
+                result.Discount = float.Parse(discount[2].Value) * -1;
+            }
+
+            var shippingNode = orderSumary.Where(node => node.InnerText.Contains("Shipping:")).FirstOrDefault();
+            if (shippingNode != null)
+            {
+                var shipping = Regex.Matches(shippingNode.ParentNode.ChildNodes[3].ChildNodes[1].InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
+                result.Shipping = float.Parse(shipping[1].Value);
+            }
+
+            var taxNode = orderSumary.Where(node => node.InnerText.Contains("Tax:")).FirstOrDefault();
+            if (taxNode != null)
+            {
+                var tax = Regex.Matches(taxNode.ParentNode.ChildNodes[3].ChildNodes[1].InnerText.Trim(), @"([0-9.]+|[^0-9.\s]+)");
+                result.Tax = float.Parse(tax[1].Value);
+            }
+
             return result;
         }
     }
@@ -168,6 +215,12 @@ namespace PrintManager
         public string ZipCode { get; internal set; }
         public string Country { get; internal set; }
         public float OrderTotal { get; internal set; }
+        public float ItemTotal { get; internal set; }
+        public float Discount { get; internal set; }
+        public float Subtotal { get; internal set; }
+        public float Shipping { get; internal set; }
+        public float Tax { get; internal set; }
+
         public string OrderTotalCurrency { get; internal set; }
         public List<ItemModel> Items { get; internal set; }
         public EmailModel()

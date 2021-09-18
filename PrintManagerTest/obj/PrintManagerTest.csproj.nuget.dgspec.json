@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\GM\\Documents\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj": {}
+    "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj": {}
   },
   "projects": {
-    "C:\\Users\\GM\\Documents\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj": {
+    "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\GM\\Documents\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
+        "projectUniqueName": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
         "projectName": "PrintManagerTest",
-        "projectPath": "C:\\Users\\GM\\Documents\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
+        "projectPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\PrintManagerTest.csproj",
         "packagesPath": "C:\\Users\\GM\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\GM\\Documents\\PrintManager\\PrintManagerTest\\obj\\",
+        "outputPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManagerTest\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -30,8 +30,8 @@
         "frameworks": {
           "netcoreapp2.1": {
             "projectReferences": {
-              "C:\\Users\\GM\\Documents\\PrintManager\\PrintManager\\PrintManager.csproj": {
-                "projectPath": "C:\\Users\\GM\\Documents\\PrintManager\\PrintManager\\PrintManager.csproj"
+              "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj": {
+                "projectPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj"
               }
             }
           }
@@ -59,14 +59,14 @@
         }
       }
     },
-    "C:\\Users\\GM\\Documents\\PrintManager\\PrintManager\\PrintManager.csproj": {
+    "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\GM\\Documents\\PrintManager\\PrintManager\\PrintManager.csproj",
+        "projectUniqueName": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj",
         "projectName": "PrintManager",
-        "projectPath": "C:\\Users\\GM\\Documents\\PrintManager\\PrintManager\\PrintManager.csproj",
+        "projectPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\PrintManager.csproj",
         "packagesPath": "C:\\Users\\GM\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\GM\\Documents\\PrintManager\\PrintManager\\obj\\",
+        "outputPath": "D:\\FreeLancer\\DotNet\\PrintManager\\PrintManager\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -103,6 +103,10 @@
             "HtmlAgilityPack.NetCore": {
               "target": "Package",
               "version": "[1.5.0.1, )"
+            },
+            "MailKit": {
+              "target": "Package",
+              "version": "[2.15.0, )"
             },
             "Microsoft.NETCore.App": {
               "suppressParent": "All",
